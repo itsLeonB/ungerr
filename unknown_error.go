@@ -10,10 +10,15 @@ type UnknownError struct {
 	file string
 	line int
 	fn   string
+	err  error
 }
 
 func (e *UnknownError) Error() string {
-	return fmt.Sprintf("%s\n\tat %s (%s:%d)", e.msg, e.fn, e.file, e.line)
+	if e.err == nil {
+		return fmt.Sprintf("%s\n\tat %s (%s:%d)", e.msg, e.fn, e.file, e.line)
+	}
+
+	return fmt.Sprintf("wrapped error: %s\n\tat %s (%s:%d)\n%s", e.msg, e.fn, e.file, e.line, e.err.Error())
 }
 
 func Unknown(msg string) *UnknownError {
@@ -26,4 +31,33 @@ func Unknown(msg string) *UnknownError {
 		line: line,
 		fn:   fn.Name(),
 	}
+}
+
+func Wrap(err error, msg string) *UnknownError {
+	pc, file, line, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+
+	return &UnknownError{
+		msg:  msg,
+		file: file,
+		line: line,
+		fn:   fn.Name(),
+		err:  err,
+	}
+}
+
+func Wrapf(err error, format string, args ...any) *UnknownError {
+	return Wrap(err, fmt.Sprintf(format, args...))
+}
+
+func Unwrap(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if unknownErr, ok := err.(*UnknownError); ok {
+		return unknownErr.err
+	}
+
+	return err
 }
