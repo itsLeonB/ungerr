@@ -33,6 +33,18 @@ func Unknown(msg string) *UnknownError {
 	}
 }
 
+func Unknownf(format string, args ...any) *UnknownError {
+	pc, file, line, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+
+	return &UnknownError{
+		msg:  fmt.Sprintf(format, args...),
+		file: file,
+		line: line,
+		fn:   fn.Name(),
+	}
+}
+
 func Wrap(err error, msg string) *UnknownError {
 	pc, file, line, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)

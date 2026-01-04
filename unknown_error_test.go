@@ -16,6 +16,16 @@ func TestUnknown(t *testing.T) {
 	assert.Contains(t, err.fn, "TestUnknown", "expected fn to contain 'TestUnknown'")
 }
 
+func TestUnknownf(t *testing.T) {
+	format := "error %d: %s"
+	err := Unknownf(format, 404, "not found")
+
+	assert.Equal(t, "error 404: not found", err.msg)
+	assert.NotEmpty(t, err.file)
+	assert.NotZero(t, err.line)
+	assert.Contains(t, err.fn, "TestUnknownf")
+}
+
 func TestUnknownErrorError(t *testing.T) {
 	err := &UnknownError{
 		msg:  "error message",
