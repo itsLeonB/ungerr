@@ -22,14 +22,27 @@ func (e *UnknownError) Error() string {
 }
 
 func Unknown(msg string) *UnknownError {
-	pc, file, line, _ := runtime.Caller(1)
+	pc, file, line, ok := runtime.Caller(1)
+	if !ok {
+		return &UnknownError{
+			msg:  msg,
+			file: "unknown",
+			line: 0,
+			fn:   "unknown",
+		}
+	}
+
 	fn := runtime.FuncForPC(pc)
+	fnName := "unknown"
+	if fn != nil {
+		fnName = fn.Name()
+	}
 
 	return &UnknownError{
 		msg:  msg,
 		file: file,
 		line: line,
-		fn:   fn.Name(),
+		fn:   fnName,
 	}
 }
 
