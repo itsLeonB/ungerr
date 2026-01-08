@@ -21,15 +21,10 @@ func (e *UnknownError) Error() string {
 	return fmt.Sprintf("wrapped error: %s\n\tat %s (%s:%d)\n%s", e.msg, e.fn, e.file, e.line, e.err.Error())
 }
 
-func Unknown(msg string) *UnknownError {
-	pc, file, line, ok := runtime.Caller(1)
+func extractCallerInfo() (string, int, string) {
+	pc, file, line, ok := runtime.Caller(2)
 	if !ok {
-		return &UnknownError{
-			msg:  msg,
-			file: "unknown",
-			line: 0,
-			fn:   "unknown",
-		}
+		return "unknown", 0, "unknown"
 	}
 
 	fn := runtime.FuncForPC(pc)
@@ -37,6 +32,12 @@ func Unknown(msg string) *UnknownError {
 	if fn != nil {
 		fnName = fn.Name()
 	}
+
+	return file, line, fnName
+}
+
+func Unknown(msg string) *UnknownError {
+	file, line, fnName := extractCallerInfo()
 
 	return &UnknownError{
 		msg:  msg,
@@ -47,32 +48,38 @@ func Unknown(msg string) *UnknownError {
 }
 
 func Unknownf(format string, args ...any) *UnknownError {
-	pc, file, line, _ := runtime.Caller(1)
-	fn := runtime.FuncForPC(pc)
+	file, line, fnName := extractCallerInfo()
 
 	return &UnknownError{
 		msg:  fmt.Sprintf(format, args...),
 		file: file,
 		line: line,
-		fn:   fn.Name(),
+		fn:   fnName,
 	}
 }
 
 func Wrap(err error, msg string) *UnknownError {
-	pc, file, line, _ := runtime.Caller(1)
-	fn := runtime.FuncForPC(pc)
+	file, line, fnName := extractCallerInfo()
 
 	return &UnknownError{
 		msg:  msg,
 		file: file,
 		line: line,
-		fn:   fn.Name(),
+		fn:   fnName,
 		err:  err,
 	}
 }
 
 func Wrapf(err error, format string, args ...any) *UnknownError {
-	return Wrap(err, fmt.Sprintf(format, args...))
+	file, line, fnName := extractCallerInfo()
+
+	return &UnknownError{
+		msg:  fmt.Sprintf(format, args...),
+		file: file,
+		line: line,
+		fn:   fnName,
+		err:  err,
+	}
 }
 
 func Unwrap(err error) error {
