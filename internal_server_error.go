@@ -1,6 +1,10 @@
 package ungerr
 
-import "net/http"
+import (
+	"net/http"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+)
 
 type internalServerError struct{}
 
@@ -18,6 +22,12 @@ func (ise internalServerError) Error() string {
 
 func (ise internalServerError) Details() any {
 	return nil
+}
+
+func (ise internalServerError) ToLogAttrs() []LogAttr {
+	return []LogAttr{
+		{Key: string(semconv.ErrorTypeKey), Value: "InternalServerError"},
+	}
 }
 
 func InternalServerError() AppError {
