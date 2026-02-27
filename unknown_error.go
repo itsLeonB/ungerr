@@ -24,14 +24,19 @@ func (e *UnknownError) Error() string {
 }
 
 func (e *UnknownError) ToLogAttrs() []LogAttr {
-	return []LogAttr{
+	attrs := []LogAttr{
 		{Key: string(semconv.ErrorMessageKey), Value: e.msg},
 		{Key: string(semconv.ErrorTypeKey), Value: fmt.Sprintf("%T", e.err)},
-		{Key: "error.cause", Value: e.err.Error()},
 		{Key: string(semconv.CodeFilePathKey), Value: e.file},
 		{Key: string(semconv.CodeLineNumberKey), Value: e.line},
 		{Key: string(semconv.CodeFunctionNameKey), Value: e.fn},
 	}
+
+	if e.err != nil {
+		attrs = append(attrs, LogAttr{Key: "error.cause", Value: e.err.Error()})
+	}
+
+	return attrs
 }
 
 func extractCallerInfo() (string, int, string) {
