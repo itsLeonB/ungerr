@@ -5,4 +5,5 @@ type AppError interface {
 	Details() any
 	HttpStatus() int
 	GrpcStatus() uint32
+	ToLogAttrs() []LogAttr
 }

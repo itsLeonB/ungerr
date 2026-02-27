@@ -1,6 +1,11 @@
 package ungerr
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+)
 
 type conflictError struct {
 	details any
@@ -20,6 +25,13 @@ func (ce conflictError) Error() string {
 
 func (ce conflictError) Details() any {
 	return ce.details
+}
+
+func (ce conflictError) ToLogAttrs() []LogAttr {
+	return []LogAttr{
+		{Key: string(semconv.ErrorTypeKey), Value: "ConflictError"},
+		{Key: string(semconv.ErrorMessageKey), Value: fmt.Sprintf("%v", ce.details)},
+	}
 }
 
 func ConflictError(details any) AppError {

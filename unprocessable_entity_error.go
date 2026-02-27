@@ -1,6 +1,11 @@
 package ungerr
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+)
 
 type unprocessableEntityError struct {
 	details any
@@ -20,6 +25,13 @@ func (uee unprocessableEntityError) Error() string {
 
 func (uee unprocessableEntityError) Details() any {
 	return uee.details
+}
+
+func (uee unprocessableEntityError) ToLogAttrs() []LogAttr {
+	return []LogAttr{
+		{Key: string(semconv.ErrorTypeKey), Value: "UnprocessableEntityError"},
+		{Key: string(semconv.ErrorMessageKey), Value: fmt.Sprintf("%v", uee.details)},
+	}
 }
 
 func UnprocessableEntityError(details any) AppError {

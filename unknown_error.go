@@ -3,6 +3,8 @@ package ungerr
 import (
 	"fmt"
 	"runtime"
+
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
 type UnknownError struct {
@@ -19,6 +21,17 @@ func (e *UnknownError) Error() string {
 	}
 
 	return fmt.Sprintf("wrapped error: %s\n\tat %s (%s:%d)\n%s", e.msg, e.fn, e.file, e.line, e.err.Error())
+}
+
+func (e *UnknownError) ToLogAttrs() []LogAttr {
+	return []LogAttr{
+		{Key: string(semconv.ErrorMessageKey), Value: e.msg},
+		{Key: string(semconv.ErrorTypeKey), Value: fmt.Sprintf("%T", e.err)},
+		{Key: "error.cause", Value: e.err.Error()},
+		{Key: string(semconv.CodeFilePathKey), Value: e.file},
+		{Key: string(semconv.CodeLineNumberKey), Value: e.line},
+		{Key: string(semconv.CodeFunctionNameKey), Value: e.fn},
+	}
 }
 
 func extractCallerInfo() (string, int, string) {
