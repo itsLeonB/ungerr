@@ -24,7 +24,7 @@ func (ise internalServerError) Details() any {
 	return nil
 }
 
-func (bre internalServerError) ToLogAttrs() []LogAttr {
+func (ise internalServerError) ToLogAttrs() []LogAttr {
 	return []LogAttr{
 		{Key: string(semconv.ErrorTypeKey), Value: "InternalServerError"},
 	}
