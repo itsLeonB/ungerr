@@ -24,9 +24,14 @@ func (e *UnknownError) Error() string {
 }
 
 func (e *UnknownError) ToLogAttrs() []LogAttr {
+	errType := "UnknownError"
+	if e.err != nil {
+		errType = fmt.Sprintf("%T", e.err)
+	}
+
 	attrs := []LogAttr{
 		{Key: string(semconv.ErrorMessageKey), Value: e.msg},
-		{Key: string(semconv.ErrorTypeKey), Value: fmt.Sprintf("%T", e.err)},
+		{Key: string(semconv.ErrorTypeKey), Value: errType},
 		{Key: string(semconv.CodeFilePathKey), Value: e.file},
 		{Key: string(semconv.CodeLineNumberKey), Value: e.line},
 		{Key: string(semconv.CodeFunctionNameKey), Value: e.fn},

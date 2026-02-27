@@ -16,9 +16,6 @@ help:
 lint:
 	golangci-lint run ./...
 
-build:
-	go build -v ./...
-
 test-all:
 	@echo "Running all tests..."
 	go test ./...
